@@ -6,6 +6,7 @@
 use std::collections::LinkedList;
 
 use macroquad::prelude::*;
+// use macroquad::input::{is_key_down, is_key_pressed};
 use colorsys::{Rgb, Hsl};
 
 
@@ -98,8 +99,11 @@ impl DoublePendulum {
         // let line_color = Color::new(0.7, 0.7, 0.7, 0.5);
         // let node_color = Color::new(0.0, 0.0, 0.0, 1.0);
 
-        let line_color = Color::new(0.08, 0.05, 0.05, 1.0);
-        let node_color = Color::new(0.08, 0.05, 0.05, 1.0);
+        // let line_color = Color::new(0.08, 0.05, 0.05, 1.0);
+        // let node_color = Color::new(0.08, 0.05, 0.05, 1.0);
+
+        let line_color = self.color;
+        let node_color = self.color;
 
         let ox = self.origin_x as f32;
         let oy = self.origin_y as f32;
@@ -242,8 +246,7 @@ impl DoublePendulum {
 }
 
 
-#[macroquad::main("Double Pendulum")]
-async fn main() {
+async fn run() {
     let mut fps_counter = fps::FPS::new(64);
     let dp_count = 300;
 
@@ -274,7 +277,9 @@ async fn main() {
     macroquad::window::request_new_screen_size(600.0, 600.0);
     for i in 0..dp_vec.len() {
         dp_vec[i].draw_trace();
-        dp_vec[i].draw();
+        if is_key_down(KeyCode::LeftShift) {
+            dp_vec[i].draw();
+        }
     }
     next_frame().await;
 
@@ -283,17 +288,38 @@ async fn main() {
     loop {
         clear_background(bg_color);
 
+        // restart if the R key was pressed
+        if is_key_pressed(KeyCode::R) {
+            return;
+        }
+
         fps_counter.update();
-        draw_text(&format!("{}", fps_counter.fps()), 10.0, 20.0, 20.0, BLACK);
-        draw_text(&format!("{}", fps_counter.frame()), 10.0, 40.0, 20.0, BLACK);
+        draw_text(&format!("R to restart"), 10.0, 20.0, 20.0, BLACK);
+        draw_text(&format!("SHIFT to show pendulum"), 10.0, 40.0, 20.0, BLACK);
+        draw_text(&format!("FPS: {}", fps_counter.fps()), 10.0, 60.0, 20.0, BLACK);
+        draw_text(&format!("Frame: {}", fps_counter.frame()), 10.0, 80.0, 20.0, BLACK);
         
         for i in 0..dp_vec.len() {
+            
             dp_vec[i].draw_trace();
+        }
+        if is_key_down(KeyCode::LeftShift) {
+            for i in 0..dp_vec.len() {
+                dp_vec[i].draw();
+            }  
         }
         for i in 0..dp_vec.len() {
             dp_vec[i].update(macroquad::time::get_frame_time() as f64);
         }
 
         next_frame().await
+    }
+}
+
+
+#[macroquad::main("Double Pendulum")]
+async fn main() {
+    loop {
+        run().await;
     }
 }
