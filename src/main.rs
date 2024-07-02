@@ -142,7 +142,7 @@ impl DoublePendulum {
 
             draw_line(ox + t1x as f32, oy + t1y as f32, ox + t2x as f32, oy + t2y as f32, thickness, trace_color);
 
-            thickness *= 0.99;
+            thickness *= 0.985;
         }
 
     }
@@ -168,7 +168,7 @@ impl DoublePendulum {
         let current = DVec4::new(self.theta1, self.theta2, self.angular1, self.angular2);
 
         self.prev_angles.push_front((self.theta1, self.theta2));
-        if self.prev_angles.len() > 144 {
+        if self.prev_angles.len() > 150 {
             self.prev_angles.pop_back();
         }
 
@@ -275,12 +275,6 @@ async fn run() {
     }
 
     macroquad::window::request_new_screen_size(600.0, 600.0);
-    for i in 0..dp_vec.len() {
-        dp_vec[i].draw_trace();
-        if is_key_down(KeyCode::LeftShift) {
-            dp_vec[i].draw();
-        }
-    }
     next_frame().await;
 
     // update loop
@@ -295,13 +289,14 @@ async fn run() {
 
         fps_counter.update();
         draw_text(&format!("R to restart"), 10.0, 20.0, 20.0, BLACK);
-        draw_text(&format!("SHIFT to show pendulum"), 10.0, 40.0, 20.0, BLACK);
+        draw_text(&format!("SHIFT to show pendulum / CTRL to hide traces"), 10.0, 40.0, 20.0, BLACK);
         draw_text(&format!("FPS: {}", fps_counter.fps()), 10.0, 60.0, 20.0, BLACK);
         draw_text(&format!("Frame: {}", fps_counter.frame()), 10.0, 80.0, 20.0, BLACK);
         
-        for i in 0..dp_vec.len() {
-            
-            dp_vec[i].draw_trace();
+        if !is_key_down(KeyCode::LeftControl) {
+            for i in 0..dp_vec.len() {
+                dp_vec[i].draw_trace();
+            }
         }
         if is_key_down(KeyCode::LeftShift) {
             for i in 0..dp_vec.len() {
